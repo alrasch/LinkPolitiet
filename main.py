@@ -51,6 +51,10 @@ async def on_message(message):
 
     print("{}: {}".format(message.author, message.content))
 
+    if message.author.name == os.getenv("ADMIN_NAME") and \
+            message.author.discriminator == os.getenv("ADMIN_DISCRIMINATOR"):
+        return
+
     urls = findUrls(message.content)
 
     try:
@@ -62,6 +66,7 @@ async def on_message(message):
     except discord.Forbidden as ex:
         print("Failed to delete message due to permissions.")
         print(ex.text)
+        print(ex.response)
     except discord.NotFound as ex:
         print("Failed to find message.")
         print(ex.text)
