@@ -22,7 +22,13 @@ def checkIfWhitelisted(url):
         "download.udl.no",
         "youtube.com",
         "youtu.be",
-        "github.com"
+        "github.com",
+        "udir.no",
+        "ndla.no",
+        "matematikk.net",
+        "en.wikipedia.org",
+        "www.csn.edu",
+        "catalog.csn.edu"
     ]
 
     parsed_url = urlparse(url)
