@@ -32,7 +32,12 @@ def checkIfWhitelisted(url):
     ]
 
     parsed_url = urlparse(url)
-    if parsed_url.netloc in whitelist or parsed_url.path in whitelist:
+    location = parsed_url.netloc
+
+    if len(location) == 0:
+        return True
+
+    if location.replace("www.", "") in whitelist:
         print(parsed_url, "totally in whitelist")
         return True
     print(parsed_url, "not whitelisted")
