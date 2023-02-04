@@ -7,40 +7,26 @@ from urllib.parse import urlparse
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
-client = discord.Client()
 
+intents = discord.Intents.default()
+intents.message_content = True
+
+client = discord.Client(intents=intents)
 
 def findUrls(string):
     extractor = URLExtract()
     urls = extractor.find_urls(string)
     return urls
 
-
-def checkIfWhitelisted(url):
-    whitelist = [
-        "udl.no",
-        "download.udl.no",
-        "youtube.com",
-        "youtu.be",
-        "github.com",
-        "udir.no",
-        "ndla.no",
-        "matematikk.net",
-        "en.wikipedia.org",
-        "www.csn.edu",
-        "catalog.csn.edu"
-    ]
+def checkIfBlacklisted(url):
+    with open("blacklist", "r") as f:
+        blacklist = f.read().splitlines()
 
     parsed_url = urlparse(url)
     location = parsed_url.netloc
 
-    if len(location) == 0:
+    if location.replace("www.", "") in blacklist:
         return True
-
-    if location.replace("www.", "") in whitelist:
-        print(parsed_url, "totally in whitelist")
-        return True
-    print(parsed_url, "not whitelisted")
     return False
 
 
@@ -59,10 +45,20 @@ async def on_message(message):
 
     try:
         for url in urls:
-            whitelisted = checkIfWhitelisted(url)
-            if whitelisted is False:
-                print("Suppressing message. {name}: {post}".format(name=message.author, post=message.content))
+            with open("linked_links.log", "a") as file:
+                file.write(f'\n{message.author.name} in {message.channel.name}:\n{message.content}\n{url}\n')
+
+            blacklisted = checkIfBlacklisted(url)
+            if blacklisted is True:
+                with open("suppressed.log", "a") as f:
+                    f.write("\nSuppressing message. {name} in {channel}: {post}\n".format(
+                        name=message.author,
+                        channel=message.channel.name,
+                        post=message.content)
+                    )
                 await message.delete()
+                await message.channel.send(content="Fjerna ei melding som inneholdt en link.")
+
     except discord.Forbidden as ex:
         print("Failed to delete message due to permissions.")
         print(ex.text)
